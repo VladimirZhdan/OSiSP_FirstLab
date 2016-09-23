@@ -4,7 +4,6 @@
 Line::Line()
 {
 	countDots = 2;
-
 }
 
 void Line::Draw(HDC hdc)

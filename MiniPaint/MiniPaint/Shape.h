@@ -9,14 +9,13 @@ class Shape
 public:	
 	Shape();
 	void AddDot(POINT point);
+	void ChangeIntermediateOrAddNewDot(POINT point);
 	virtual void EndCreateShape();
 	virtual void Draw(HDC hdc) = 0;
 	bool isEndDrawing();
-
 protected:	
 	std::vector<POINT> dots;
 	int countDots;
-
 private:
 	bool endDrawing;
 

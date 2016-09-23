@@ -14,9 +14,9 @@ HINSTANCE hInst;								// текущий экземпляр
 TCHAR szTitle[MAX_LOADSTRING];					// Текст строки заголовка
 TCHAR szWindowClass[MAX_LOADSTRING];			// имя класса главного окна
 
-// Переменные для рисования
-DrawingShapes drawingShapes;
-Shape *shape = new Line();
+
+DrawingShapes *drawingShapes;
+static Shape *shape = new Line();
 
 
 // Отправить объявления функций, включенных в этот модуль кода:
@@ -50,8 +50,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MINIPAINT));
 
-	//!!!
-	drawingShapes.StartDrawing(shape);
+	//!!!	
 	//!!!
 
 	// Цикл основного сообщения:
@@ -114,6 +113,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
+   drawingShapes = new DrawingShapes(hWnd);
+   //!!!
+   drawingShapes->StartDrawing(shape);
+   //!!!
+
    if (!hWnd)
    {
       return FALSE;
@@ -140,7 +144,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
-	static POINT point;
+	///
+	///	Переменные рисования
+	///
+	static POINT point;		
+
 
 	switch (message)
 	{
@@ -160,26 +168,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
-	case WM_LBUTTONDOWN:
+	case WM_MOUSEMOVE:
 		point.x = LOWORD(lParam);
-		point.y = HIWORD(lParam);
-		drawingShapes.Drawing(point);	
+		point.y = HIWORD(lParam);		
+		InvalidateRect(hWnd, NULL, TRUE);
+		break;	
+
+	case WM_LBUTTONDOWN:		
+		drawingShapes->AddDot(point);	
 		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
 	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		
-		drawingShapes.DrawingAllShapes(hdc);
-
-		EndPaint(hWnd, &ps);
+		drawingShapes->Drawing(point);	
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);		
 		//!!!
 		delete shape;
-		//!!!
-
+		delete drawingShapes;
+		//!!!		
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);

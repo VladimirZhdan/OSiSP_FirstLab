@@ -1,33 +1,61 @@
 #include "stdafx.h"
 #include "DrawingShapes.h"
 
+DrawingShapes::DrawingShapes(HWND hWnd)
+{
+	this->hWnd = hWnd;
+}
+
 void DrawingShapes::StartDrawing(Shape *shape)
 {
 	if (shape != NULL)
-	{
-		endDrawing = false;
+	{		
 		currentShape = shape;		
 	}
 }
 
-void DrawingShapes::Drawing(POINT point)
-{
-	if (!endDrawing)
+void DrawingShapes::AddDot(POINT point)
+{		
+	if (endDrawing)
 	{
-		currentShape->AddDot(point);
-		if (currentShape->isEndDrawing())
-		{
-			shapes.push_back(currentShape);			
-			///ADD CODE
-			endDrawing = true;
-		}
+		endDrawing = false;
 	}
-
+	currentShape->AddDot(point);
+	if (currentShape->isEndDrawing())
+	{
+		shapes.push_back(currentShape);					
+		endDrawing = true;
+	}	
 }
 
+void DrawingShapes::Drawing(POINT point)
+{	
+	RECT clientRect;
+	GetClientRect(hWnd, &clientRect);
+	PAINTSTRUCT paintStruct;
+	HDC hdc = BeginPaint(hWnd, &paintStruct);
+	HDC bufferHDC = CreateCompatibleDC(hdc);
+	int windowWidth = clientRect.right - clientRect.left;
+	int windowHeight = clientRect.bottom - clientRect.top;
+	HBITMAP bitmap = CreateCompatibleBitmap(bufferHDC ,windowWidth, windowHeight);
+	SelectObject(bufferHDC, bitmap);
+	FillRect(bufferHDC, &clientRect, WHITE_BRUSH);
+	//
+	//draw to buffer
+	//
+	if (!endDrawing)
+	{
+		currentShape->ChangeIntermediateOrAddNewDot(point);
+		currentShape->Draw(bufferHDC);
+	}
+	RedrawAllShapes(bufferHDC);
+	BitBlt(hdc, 0, 0, windowWidth, windowHeight, bufferHDC, 0, 0, SRCCOPY);
+	EndPaint(hWnd, &paintStruct);
+	DeleteDC(bufferHDC);
+	//DeleteBitmap(bitmap);
+}
 
-
-void DrawingShapes::DrawingAllShapes(HDC hdc)
+void DrawingShapes::RedrawAllShapes(HDC hdc)
 {
 	//Clear Window
 	for (int i = 0; i < shapes.size(); i++)

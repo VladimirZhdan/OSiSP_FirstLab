@@ -7,18 +7,20 @@
 class DrawingShapes
 {
 public:
+	DrawingShapes(HWND hWnd);
 	void StartDrawing(Shape *shape);
+	void AddDot(POINT point);
 	void Drawing(POINT point);
-	void DrawingAllShapes(HDC hdc);
-
-private:
+private:	
+	void RedrawAllShapes(HDC hdc);
 	std::vector<Shape*> shapes;
 	bool endDrawing = true;
 	Shape *currentShape;
+	HWND hWnd;
 
 
 };
 
 
-
+;
 #endif
