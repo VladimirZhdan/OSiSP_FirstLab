@@ -3,6 +3,9 @@
 
 #include "stdafx.h"
 #include "MiniPaint.h"
+#include "DrawingShapes.h"
+#include "Line.h"                    /// Потом удалить!!!
+
 
 #define MAX_LOADSTRING 100
 
@@ -10,6 +13,11 @@
 HINSTANCE hInst;								// текущий экземпляр
 TCHAR szTitle[MAX_LOADSTRING];					// Текст строки заголовка
 TCHAR szWindowClass[MAX_LOADSTRING];			// имя класса главного окна
+
+// Переменные для рисования
+DrawingShapes drawingShapes;
+Shape *shape = new Line();
+
 
 // Отправить объявления функций, включенных в этот модуль кода:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -41,6 +49,10 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MINIPAINT));
+
+	//!!!
+	drawingShapes.StartDrawing(shape);
+	//!!!
 
 	// Цикл основного сообщения:
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -128,6 +140,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
+	static POINT point;
 
 	switch (message)
 	{
@@ -147,13 +160,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
+	case WM_LBUTTONDOWN:
+		point.x = LOWORD(lParam);
+		point.y = HIWORD(lParam);
+		drawingShapes.Drawing(point);	
+		InvalidateRect(hWnd, NULL, TRUE);
+		break;
+
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		// TODO: добавьте любой код отрисовки...
+		
+		drawingShapes.DrawingAllShapes(hdc);
+
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
-		PostQuitMessage(0);
+		PostQuitMessage(0);		
+		//!!!
+		delete shape;
+		//!!!
+
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
