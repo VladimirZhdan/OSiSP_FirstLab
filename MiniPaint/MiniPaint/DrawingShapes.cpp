@@ -28,6 +28,11 @@ void DrawingShapes::AddDot(POINT point)
 	}	
 }
 
+void DrawingShapes::AddExtraDot()
+{
+	currentShape->AddExtraDot();
+}
+
 void DrawingShapes::Drawing(POINT point)
 {	
 	RECT clientRect;
@@ -52,7 +57,7 @@ void DrawingShapes::Drawing(POINT point)
 	BitBlt(hdc, 0, 0, windowWidth, windowHeight, bufferHDC, 0, 0, SRCCOPY);
 	EndPaint(hWnd, &paintStruct);
 	DeleteDC(bufferHDC);
-	//DeleteBitmap(bitmap);
+	DeleteObject(bitmap);	
 }
 
 void DrawingShapes::RedrawAllShapes(HDC hdc)

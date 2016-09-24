@@ -7,21 +7,15 @@ Shape::Shape()
 }
 
 void Shape::AddDot(POINT point)
-{	
-	int currentDotsCount = dots.size();
+{				
+	if (dots.size() == countDots && (!endDrawing))
+	{
+		endDrawing = true;		
+	}
+
 	if (!endDrawing)
 	{
 		dots.push_back(point);
-	}
-	else
-	{
-		dots[currentDotsCount - 1] = point;
-	}
-	
-	if (dots.size() == countDots && (!endDrawing))
-	{
-		endDrawing = true;
-		EndCreateShape();
 	}
 }
 
@@ -43,7 +37,7 @@ bool Shape::isEndDrawing()
 	return endDrawing;
 }
 
-void Shape::EndCreateShape()
+void Shape::AddExtraDot()
 {
 
 }

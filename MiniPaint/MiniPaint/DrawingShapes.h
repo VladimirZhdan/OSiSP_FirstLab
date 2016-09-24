@@ -11,6 +11,7 @@ public:
 	void StartDrawing(Shape *shape);
 	void AddDot(POINT point);
 	void Drawing(POINT point);
+	void AddExtraDot();
 private:	
 	void RedrawAllShapes(HDC hdc);
 	std::vector<Shape*> shapes;
