@@ -5,6 +5,14 @@ DrawingShapes::DrawingShapes(HWND hWnd)
 {
 	this->hWnd = hWnd;
 }
+DrawingShapes::~DrawingShapes()
+{
+	for (int i = shapes.size() - 1; i >= 0; i--)
+	{
+		delete shapes[i];
+		shapes.pop_back();
+	}
+}
 
 void DrawingShapes::StartDrawing(Shape *shape)
 {
@@ -61,8 +69,12 @@ void DrawingShapes::Drawing(POINT point)
 }
 
 void DrawingShapes::RedrawAllShapes(HDC hdc)
-{
-	//Clear Window
+{	
 	for (int i = 0; i < shapes.size(); i++)
 		shapes[i]->Draw(hdc);	
+}
+
+bool DrawingShapes::isEndDrawing()
+{
+	return endDrawing;
 }

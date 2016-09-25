@@ -4,12 +4,9 @@
 #include "stdafx.h"
 #include "MiniPaint.h"
 #include "DrawingShapes.h"
-#include "Line.h"                    /// Потом удалить!!!
-#include "Pencil.h"
-#include "Rectangle.h"
-#include "Ellipse.h"
-#include "Polygon.h"
-#include "PolygonalLine.h"
+//own files
+#include "FabricsBase.h"
+#include "Factory.h"
 
 
 
@@ -23,9 +20,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// имя класса главного окна
 
 
 DrawingShapes *drawingShapes;
-//static Shape *shape = new Line();	 /// Потом удалить!!!
-static Shape *shape = new MiniPaint::Polygon();	 /// Потом удалить!!!
-
+FabricsBase* currentFabric;
 
 // Отправить объявления функций, включенных в этот модуль кода:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -56,10 +51,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MINIPAINT));
-
-	//!!!	
-	//!!!
+	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MINIPAINT));	
 
 	// Цикл основного сообщения:
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -159,33 +151,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-		// Разобрать выбор в меню:
+		wmEvent = HIWORD(wParam);		
 		switch (wmId)
 		{	
 		case IDM_LINE:
-			shape = new Line();
-			drawingShapes->StartDrawing(shape);
+			currentFabric = Factory::GetCurrentFabric(1);
+			drawingShapes->StartDrawing(currentFabric->Create());			
 			break;
 		case IDM_PENCIL:
-			shape = new Pencil();
-			drawingShapes->StartDrawing(shape);
+			currentFabric = Factory::GetCurrentFabric(2);
+			drawingShapes->StartDrawing(currentFabric->Create());
 			break;
 		case IDM_RECTANGLE:
-			shape = new MiniPaint::Rectangle();
-			drawingShapes->StartDrawing(shape);
+			currentFabric = Factory::GetCurrentFabric(3);
+			drawingShapes->StartDrawing(currentFabric->Create());
 			break;
 		case IDM_ELLIPSE:
-			shape = new MiniPaint::Ellipse();
-			drawingShapes->StartDrawing(shape);
+			currentFabric = Factory::GetCurrentFabric(4);
+			drawingShapes->StartDrawing(currentFabric->Create());
 			break;
 		case IDM_POLYGONALLINE:
-			shape = new MiniPaint::PolygonalLine();
-			drawingShapes->StartDrawing(shape);
+			currentFabric = Factory::GetCurrentFabric(5);
+			drawingShapes->StartDrawing(currentFabric->Create());
 			break;
 		case IDM_POLYGON:
-			shape = new MiniPaint::Polygon();
-			drawingShapes->StartDrawing(shape);
+			currentFabric = Factory::GetCurrentFabric(6);
+			drawingShapes->StartDrawing(currentFabric->Create());
 			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -199,12 +190,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_MOUSEMOVE:
 		point.x = LOWORD(lParam);
-		point.y = HIWORD(lParam);		
-		InvalidateRect(hWnd, NULL, TRUE);
+		point.y = HIWORD(lParam);	
+		if (!(drawingShapes->isEndDrawing()))
+			InvalidateRect(hWnd, NULL, TRUE);
 		break;	
 	case WM_LBUTTONDOWN:		
-		drawingShapes->AddDot(point);	
-		InvalidateRect(hWnd, NULL, TRUE);
+		drawingShapes->AddDot(point);			
 		break;
 	case WM_RBUTTONDOWN:
 		drawingShapes->AddExtraDot();
@@ -214,8 +205,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);		
-		//!!!
-		delete shape;
+		//!!!		
 		delete drawingShapes;
 		//!!!		
 		break;
