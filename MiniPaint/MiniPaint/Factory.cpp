@@ -7,7 +7,8 @@ std::vector<FabricsBase* > Factory::fabricsList = {
 	new RectangleCreator(),
 	new EllipseCreator(),
 	new PolygonalLineCreator(),
-	new PolygonCreator()
+	new PolygonCreator(),
+	new TextCreator()
 };
 
 FabricsBase* Factory::GetCurrentFabric(int index)

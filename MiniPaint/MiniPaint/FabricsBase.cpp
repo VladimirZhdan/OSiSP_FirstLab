@@ -3,32 +3,37 @@
 
 
 
-Shape* LineCreator::Create()
+DrawObject* LineCreator::Create(HPEN hPen)
 {	
-	return new Line();
+	return new MiniPaint::Line(hPen);
 }
 
-Shape* PencilCreator::Create()
+DrawObject* PencilCreator::Create(HPEN hPen)
 {
-	return new Pencil();
+	return new MiniPaint::Pencil(hPen);
 }
 
-Shape* RectangleCreator::Create()
+DrawObject* RectangleCreator::Create(HPEN hPen)
 {
-	return new MiniPaint::Rectangle();
+	return new MiniPaint::Rectangle(hPen);
 }
 
-Shape* EllipseCreator::Create()
+DrawObject* EllipseCreator::Create(HPEN hPen)
 {
-	return new MiniPaint::Ellipse();
+	return new MiniPaint::Ellipse(hPen);
 }
 
-Shape* PolygonalLineCreator::Create()
+DrawObject* PolygonalLineCreator::Create(HPEN hPen)
 {
-	return new MiniPaint::PolygonalLine();
+	return new MiniPaint::PolygonalLine(hPen);
 }
 
-Shape* PolygonCreator::Create()
+DrawObject* PolygonCreator::Create(HPEN hPen)
 {
-	return new MiniPaint::Polygon();
+	return new MiniPaint::Polygon(hPen);
+}
+
+DrawObject* TextCreator::Create(HPEN hPen)
+{
+	return new MiniPaint::Text(hPen);
 }

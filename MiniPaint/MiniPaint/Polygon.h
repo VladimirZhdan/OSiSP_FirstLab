@@ -2,14 +2,14 @@
 #define __Polygon__
 
 #include <Windows.h>
-#include "Shape.h"
+#include "DrawObject.h"
 
 namespace MiniPaint
 {
-	class Polygon : public Shape
+	class Polygon : virtual public DrawObject
 	{
 	public:
-		Polygon();
+		Polygon(HPEN hPen);
 		virtual void Draw(HDC hdc);
 		virtual void AddExtraDot();
 

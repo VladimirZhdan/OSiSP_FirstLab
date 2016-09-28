@@ -2,13 +2,16 @@
 #define __Pencil__
 
 #include <Windows.h>
-#include "Shape.h"
+#include "DrawObject.h"
 
-class Pencil : public Shape
+namespace MiniPaint
 {
-public:
-	Pencil();
-	virtual void Draw(HDC hdc);
-};
+	class Pencil : virtual public DrawObject
+	{
+	public:
+		Pencil(HPEN hPen);
+		virtual void Draw(HDC hdc);
+	};
+}
 
 #endif

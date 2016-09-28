@@ -2,23 +2,24 @@
 #define __DrawingShapes__
 
 #include <vector>
-#include "Shape.h"
+#include "DrawObject.h"
 
 class DrawingShapes
 {
 public:
 	DrawingShapes(HWND hWnd);
 	~DrawingShapes();
-	void StartDrawing(Shape *shape);
+	void StartDrawing(DrawObject *shape);
 	void AddDot(POINT point);
 	void Drawing(POINT point);
 	void AddExtraDot();
+	void AddInformation(TCHAR inf);
 	bool isEndDrawing();
 private:	
 	void RedrawAllShapes(HDC hdc);
-	std::vector<Shape*> shapes;
+	std::vector<DrawObject*> shapes;
 	bool endDrawing = true;
-	Shape *currentShape;
+	DrawObject *currentShape;
 	HWND hWnd;
 
 

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "FabricsBase.h"
-#include "Shape.h"
 
 class Factory
 {

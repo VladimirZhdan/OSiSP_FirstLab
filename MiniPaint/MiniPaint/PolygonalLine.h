@@ -2,14 +2,14 @@
 #define __PolygonalLine__
 
 #include <Windows.h>
-#include "Shape.h"
+#include "DrawObject.h"
 
 namespace MiniPaint
 {
-	class PolygonalLine : public Shape
+	class PolygonalLine : virtual public DrawObject
 	{
 	public:
-		PolygonalLine();
+		PolygonalLine(HPEN hPen);
 		virtual void Draw(HDC hdc);
 		virtual void AddExtraDot();
 	};

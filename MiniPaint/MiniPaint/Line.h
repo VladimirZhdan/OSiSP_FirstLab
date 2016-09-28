@@ -2,13 +2,16 @@
 #define __Line__
 
 #include "Windows.h"
-#include "Shape.h"
+#include "DrawObject.h"
 
-class Line : virtual public Shape
+namespace MiniPaint
 {
-public:
-	Line();
-	virtual void Draw(HDC hdc);	
-};
+	class Line : virtual public DrawObject
+	{
+	public:
+		Line(HPEN hPen);
+		virtual void Draw(HDC hdc);
+	};
+}
 
 #endif

@@ -90,9 +90,10 @@
     <ClInclude Include="PolygonalLine.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Shape.h" />
+    <ClInclude Include="DrawObject.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Text.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DrawingShapes.cpp" />
@@ -105,11 +106,12 @@
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="PolygonalLine.cpp" />
     <ClCompile Include="Rectangle.cpp" />
-    <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="DrawObject.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MiniPaint.rc" />

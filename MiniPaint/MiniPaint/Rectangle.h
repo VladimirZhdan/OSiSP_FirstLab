@@ -2,14 +2,14 @@
 #define __Rectangle__
 
 #include <Windows.h>
-#include "Shape.h"
+#include "DrawObject.h"
 
 namespace MiniPaint
 {
-	class Rectangle : public Shape
+	class Rectangle : virtual public DrawObject
 	{
 	public:
-		Rectangle();
+		Rectangle(HPEN hPen);
 		virtual void Draw(HDC hdc);
 	};
 }

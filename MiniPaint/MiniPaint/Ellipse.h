@@ -2,14 +2,14 @@
 #define __Ellipse__
 
 #include <Windows.h>
-#include "Shape.h"
+#include "DrawObject.h"
 
 namespace MiniPaint
 {
-	class Ellipse : public Shape
+	class Ellipse : virtual public DrawObject
 	{
 	public:
-		Ellipse();
+		Ellipse(HPEN hPen);
 		virtual void Draw(HDC hdc);
 	};
 

@@ -3,13 +3,14 @@
 
 using namespace MiniPaint;
 
-PolygonalLine::PolygonalLine()
+PolygonalLine::PolygonalLine(HPEN hPen) : DrawObject(hPen)
 {
 	countDots = 2;
 }
 
 void PolygonalLine::Draw(HDC hdc)
 {
+	//SelectObject(hdc, hPen);
 	for (int i = 0; i < countDots - 1; i++)
 	{
 		MoveToEx(hdc, dots[i].x, dots[i].y, NULL);

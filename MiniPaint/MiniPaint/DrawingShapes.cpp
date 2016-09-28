@@ -14,7 +14,7 @@ DrawingShapes::~DrawingShapes()
 	}
 }
 
-void DrawingShapes::StartDrawing(Shape *shape)
+void DrawingShapes::StartDrawing(DrawObject *shape)
 {
 	if (shape != NULL)
 	{		
@@ -41,6 +41,11 @@ void DrawingShapes::AddExtraDot()
 	currentShape->AddExtraDot();
 }
 
+void DrawingShapes::AddInformation(TCHAR inf)
+{
+	currentShape->AddInformation(inf);
+}
+
 void DrawingShapes::Drawing(POINT point)
 {	
 	RECT clientRect;
@@ -49,19 +54,19 @@ void DrawingShapes::Drawing(POINT point)
 	HDC hdc = BeginPaint(hWnd, &paintStruct);
 	HDC bufferHDC = CreateCompatibleDC(hdc);
 	int windowWidth = clientRect.right - clientRect.left;
-	int windowHeight = clientRect.bottom - clientRect.top;
+	int windowHeight = clientRect.bottom - clientRect.top;	
 	HBITMAP bitmap = CreateCompatibleBitmap(bufferHDC ,windowWidth, windowHeight);
 	SelectObject(bufferHDC, bitmap);
 	FillRect(bufferHDC, &clientRect, WHITE_BRUSH);
 	//
 	//draw to buffer
 	//
+	RedrawAllShapes(bufferHDC);
 	if (!endDrawing)
 	{
 		currentShape->ChangeIntermediateOrAddNewDot(point);
 		currentShape->Draw(bufferHDC);
 	}
-	RedrawAllShapes(bufferHDC);
 	BitBlt(hdc, 0, 0, windowWidth, windowHeight, bufferHDC, 0, 0, SRCCOPY);
 	EndPaint(hWnd, &paintStruct);
 	DeleteDC(bufferHDC);

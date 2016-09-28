@@ -3,8 +3,9 @@
 
 #include "stdafx.h"
 #include "MiniPaint.h"
-#include "DrawingShapes.h"
+#include <commdlg.h>
 //own files
+#include "DrawingShapes.h"
 #include "FabricsBase.h"
 #include "Factory.h"
 
@@ -21,6 +22,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// им€ класса главного окна
 
 DrawingShapes *drawingShapes;
 FabricsBase* currentFabric;
+HPEN currHPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 
 // ќтправить объ€влени€ функций, включенных в этот модуль кода:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -86,7 +88,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MINIPAINT));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground = (HBRUSH)(WHITE_BRUSH);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_MINIPAINT);
 	wcex.lpszClassName	= szWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -141,42 +143,68 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
-	///
-	///	ѕеременные рисовани€
-	///
-	static POINT point;		
+
+	static CHOOSECOLOR ccs;
+	static COLORREF acrCustClr[16];
+	static HBRUSH hBrush;
+	static POINT point;			
+	static COLORREF stdColor = RGB(255,0,0);	
+
 
 
 	switch (message)
 	{
+	case WM_CREATE:
+		ccs.lStructSize = sizeof(CHOOSECOLOR);
+		ccs.hwndOwner = hWnd;
+		ccs.rgbResult = stdColor;
+		ccs.Flags = CC_RGBINIT | CC_FULLOPEN;
+		ccs.lpCustColors = (LPDWORD)acrCustClr;
+		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);		
 		switch (wmId)
-		{	
+		{			
+		case IDM_CHOOSECOLOR:
+			if (ChooseColor(&ccs))
+			{
+				stdColor = ccs.rgbResult;
+				if (hBrush) DeleteObject(hBrush);
+				hBrush = CreateSolidBrush(stdColor);
+				HPEN hPen;
+				if (currHPen) DeleteObject(currHPen);
+				currHPen = CreatePen(PS_SOLID, 5, stdColor);
+				InvalidateRect(hWnd, NULL, TRUE);
+			}
+			break;
 		case IDM_LINE:
 			currentFabric = Factory::GetCurrentFabric(1);
-			drawingShapes->StartDrawing(currentFabric->Create());			
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
 			break;
 		case IDM_PENCIL:
 			currentFabric = Factory::GetCurrentFabric(2);
-			drawingShapes->StartDrawing(currentFabric->Create());
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
 			break;
 		case IDM_RECTANGLE:
 			currentFabric = Factory::GetCurrentFabric(3);
-			drawingShapes->StartDrawing(currentFabric->Create());
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
 			break;
 		case IDM_ELLIPSE:
 			currentFabric = Factory::GetCurrentFabric(4);
-			drawingShapes->StartDrawing(currentFabric->Create());
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
 			break;
 		case IDM_POLYGONALLINE:
 			currentFabric = Factory::GetCurrentFabric(5);
-			drawingShapes->StartDrawing(currentFabric->Create());
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
 			break;
 		case IDM_POLYGON:
 			currentFabric = Factory::GetCurrentFabric(6);
-			drawingShapes->StartDrawing(currentFabric->Create());
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			break;
+		case IDM_TEXT:
+			currentFabric = Factory::GetCurrentFabric(7);
+			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
 			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -186,6 +214,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		break;
+	case WM_CHAR:
+		if (!(drawingShapes->isEndDrawing()))
+		{
+			drawingShapes->AddInformation((TCHAR)wParam);
+			InvalidateRect(hWnd, NULL, TRUE);
 		}
 		break;
 	case WM_MOUSEMOVE:
@@ -199,6 +234,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_RBUTTONDOWN:
 		drawingShapes->AddExtraDot();
+		break;
+	case WM_ERASEBKGND:
+		return 1;
 		break;
 	case WM_PAINT:
 		drawingShapes->Drawing(point);	
