@@ -6,21 +6,27 @@
 
 class DrawingShapes
 {
-public:
-	DrawingShapes(HWND hWnd);
+public:	
+	static void InitInstance(HWND hWnd);
+	static DrawingShapes* getInstance();
 	~DrawingShapes();
 	void StartDrawing(DrawObject *shape);
+	void RedrawAllShapes(HDC hdc);
 	void AddDot(POINT point);
 	void Drawing(POINT point);
 	void AddExtraDot();
 	void AddInformation(TCHAR inf);
 	bool isEndDrawing();
-private:	
-	void RedrawAllShapes(HDC hdc);
+	void setMetaFile(HENHMETAFILE hEnhMetaFile);
+	
+private:
+	DrawingShapes();
+	static DrawingShapes* instance;	
 	std::vector<DrawObject*> shapes;
 	bool endDrawing = true;
 	DrawObject *currentShape;
 	HWND hWnd;
+	HENHMETAFILE hEnhMetaFile;
 
 
 };

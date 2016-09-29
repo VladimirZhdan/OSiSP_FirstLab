@@ -83,6 +83,7 @@
     <ClInclude Include="Ellipse.h" />
     <ClInclude Include="FabricsBase.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="FileLogic.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="MiniPaint.h" />
     <ClInclude Include="Pencil.h" />
@@ -100,6 +101,7 @@
     <ClCompile Include="Ellipse.cpp" />
     <ClCompile Include="FabricsBase.cpp" />
     <ClCompile Include="Factory.cpp" />
+    <ClCompile Include="FileLogic.cpp" />
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="MiniPaint.cpp" />
     <ClCompile Include="Pencil.cpp" />

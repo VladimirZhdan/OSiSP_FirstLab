@@ -8,7 +8,7 @@
 #include "DrawingShapes.h"
 #include "FabricsBase.h"
 #include "Factory.h"
-
+#include "FileLogic.h"
 
 
 
@@ -111,11 +111,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    HWND hWnd;
 
    hInst = hInstance; // Сохранить дескриптор экземпляра в глобальной переменной
+   //WS_OVERLAPPEDWINDOW
+   hWnd = CreateWindow(szWindowClass, szTitle, 
+	   WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+	   CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, HWND_DESKTOP, NULL, hInstance, NULL);
+   
 
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
-   drawingShapes = new DrawingShapes(hWnd);
+   DrawingShapes::InitInstance(hWnd);
+   drawingShapes = DrawingShapes::getInstance();
 
    if (!hWnd)
    {
@@ -148,24 +151,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static COLORREF acrCustClr[16];
 	static HBRUSH hBrush;
 	static POINT point;			
-	static COLORREF stdColor = RGB(255,0,0);	
+	static COLORREF stdColor = RGB(0,0,0);	
+
+	//variables to work with Files
+	static TCHAR fileName[256] = _T("");
+	static OPENFILENAME hFile;
+	static HENHMETAFILE hEnhMetaFile;
 
 
 
 	switch (message)
 	{
 	case WM_CREATE:
+		//init ChooseColorDialog
 		ccs.lStructSize = sizeof(CHOOSECOLOR);
 		ccs.hwndOwner = hWnd;
 		ccs.rgbResult = stdColor;
 		ccs.Flags = CC_RGBINIT | CC_FULLOPEN;
 		ccs.lpCustColors = (LPDWORD)acrCustClr;
+		//init OpenFileDialog
+		hFile.lStructSize = sizeof(OPENFILENAME);
+		hFile.hwndOwner = hWnd;
+		hFile.hInstance = hInst;
+		hFile.lpstrFilter = _T("MetaFile\0*.met");
+		hFile.lpstrFile = fileName;
+		hFile.nMaxFile= 256;
+		hFile.lpstrInitialDir = _T(".\\");
+		hFile.lpstrDefExt = _T("met");
 		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);		
 		switch (wmId)
-		{			
+		{		
+		case IDM_OpenEnhancedFile:
+			hFile.lpstrTitle = _T("Открытие файла");
+			hFile.Flags = OFN_HIDEREADONLY;
+			if (!GetOpenFileName(&hFile)) return 1;
+			///
+			/// Work with fileName
+			///
+			if (!(FileLogic::OpenEnhancedFile(&hEnhMetaFile, hFile.lpstrFile)))
+			{
+				MessageBox(hWnd, _T("Ошибка открытия файла"), _T("Error"), MB_OK);
+			}
+			else
+			{
+				drawingShapes->setMetaFile(hEnhMetaFile);
+			}
+			InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		case IDM_SaveAsEnhancedFile:
+			hFile.lpstrTitle = _T("Сохранение в файл");
+			hFile.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT;
+			if (!GetSaveFileName(&hFile)) return 1;
+			///
+			/// Work with fileName
+			///
+			if (FileLogic::SaveAsEnhancedFile(hWnd, hFile.lpstrFile))
+			{
+				MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
+			}				
+			else
+			{
+				MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
+			}				
+			break;
 		case IDM_CHOOSECOLOR:
 			if (ChooseColor(&ccs))
 			{

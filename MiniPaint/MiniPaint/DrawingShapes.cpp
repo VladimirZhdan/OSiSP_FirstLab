@@ -1,10 +1,26 @@
 #include "stdafx.h"
 #include "DrawingShapes.h"
 
-DrawingShapes::DrawingShapes(HWND hWnd)
+DrawingShapes* DrawingShapes::instance = new DrawingShapes();
+
+DrawingShapes::DrawingShapes()
 {
-	this->hWnd = hWnd;
+
 }
+
+void DrawingShapes::InitInstance(HWND hWnd)
+{
+	instance->hWnd = hWnd;
+}
+
+DrawingShapes* DrawingShapes::getInstance()
+{
+	if (instance->hWnd != NULL)
+		return instance;
+	else
+		return NULL;
+}
+
 DrawingShapes::~DrawingShapes()
 {
 	for (int i = shapes.size() - 1; i >= 0; i--)
@@ -58,6 +74,11 @@ void DrawingShapes::Drawing(POINT point)
 	HBITMAP bitmap = CreateCompatibleBitmap(bufferHDC ,windowWidth, windowHeight);
 	SelectObject(bufferHDC, bitmap);
 	FillRect(bufferHDC, &clientRect, WHITE_BRUSH);
+	// Draw from Enhanced MetaFile
+	if (hEnhMetaFile != NULL)
+	{
+		PlayEnhMetaFile(bufferHDC, hEnhMetaFile, &clientRect);
+	}		
 	//
 	//draw to buffer
 	//
@@ -82,4 +103,9 @@ void DrawingShapes::RedrawAllShapes(HDC hdc)
 bool DrawingShapes::isEndDrawing()
 {
 	return endDrawing;
+}
+
+void DrawingShapes::setMetaFile(HENHMETAFILE hEnhMetaFile)
+{
+	this->hEnhMetaFile = hEnhMetaFile;
 }
