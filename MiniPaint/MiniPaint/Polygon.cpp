@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-Polygon::Polygon(HPEN hPen) : DrawObject(hPen)
+Polygon::Polygon(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
 {
 	countDots = 2;
 
@@ -11,7 +11,8 @@ Polygon::Polygon(HPEN hPen) : DrawObject(hPen)
 
 void Polygon::Draw(HDC hdc)
 {
-	//SelectObject(hdc, hPen);
+	HGDIOBJ prevPen = SelectObject(hdc, hPen);
+	HGDIOBJ prevBrush = SelectObject(hdc, hBrush);
 	for (int i = 0; i < countDots - 1; i++)
 	{
 		MoveToEx(hdc, dots[i].x, dots[i].y, NULL);
@@ -19,6 +20,8 @@ void Polygon::Draw(HDC hdc)
 	}
 	MoveToEx(hdc, dots[countDots - 1].x, dots[countDots - 1].y, NULL);
 	LineTo(hdc, dots[0].x, dots[0].y);
+	SelectObject(hdc, prevPen);
+	SelectObject(hdc, prevBrush);
 }
 
 void Polygon::AddExtraDot()

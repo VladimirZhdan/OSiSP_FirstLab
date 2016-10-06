@@ -14,21 +14,44 @@
 
 #define MAX_LOADSTRING 100
 
-// Глобальные переменные:
-HINSTANCE hInst;								// текущий экземпляр
-TCHAR szTitle[MAX_LOADSTRING];					// Текст строки заголовка
-TCHAR szWindowClass[MAX_LOADSTRING];			// имя класса главного окна
-
-
+// global variables
+HINSTANCE hInst;								// current hInst
+TCHAR szTitle[MAX_LOADSTRING];					// text of Title
+TCHAR szWindowClass[MAX_LOADSTRING];			// name of main windows class
 DrawingShapes *drawingShapes;
 FabricsBase* currentFabric;
-HPEN currHPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+HPEN currHPen;
+HBRUSH currHBrush;
+//variables for Pan
+static POINT prevPoint;
+static POINT point;
+//variables to work with Pen and Brush
+static CHOOSECOLOR ccs;
+static COLORREF acrCustClr[16];
+static COLORREF stdColor;
+//variables to work with Files
+static TCHAR fileName[256] = _T("");
+static OPENFILENAME hFile;
+static HENHMETAFILE hEnhMetaFile;
+static bool isEndOFDefinitionOfPrintArea;
 
-// Отправить объявления функций, включенных в этот модуль кода:
+
+
+
+// methods signatures
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+
+// Own methods
+void InitResources(HWND hWnd);
+void InitChooseColorDialogStructure(HWND hWnd);
+void InitOpenFileDialogStructure(HWND hWnd);
+
+void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush);
+void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile);
+void MouseWheel(HWND hWnd, WPARAM wParam);
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -147,37 +170,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
-	static CHOOSECOLOR ccs;
-	static COLORREF acrCustClr[16];
-	static HBRUSH hBrush;
-	static POINT point;			
-	static COLORREF stdColor = RGB(0,0,0);	
 
-	//variables to work with Files
-	static TCHAR fileName[256] = _T("");
-	static OPENFILENAME hFile;
-	static HENHMETAFILE hEnhMetaFile;
-
-
+	
 
 	switch (message)
 	{
 	case WM_CREATE:
-		//init ChooseColorDialog
-		ccs.lStructSize = sizeof(CHOOSECOLOR);
-		ccs.hwndOwner = hWnd;
-		ccs.rgbResult = stdColor;
-		ccs.Flags = CC_RGBINIT | CC_FULLOPEN;
-		ccs.lpCustColors = (LPDWORD)acrCustClr;
-		//init OpenFileDialog
-		hFile.lStructSize = sizeof(OPENFILENAME);
-		hFile.hwndOwner = hWnd;
-		hFile.hInstance = hInst;
-		hFile.lpstrFilter = _T("MetaFile\0*.met");
-		hFile.lpstrFile = fileName;
-		hFile.nMaxFile= 256;
-		hFile.lpstrInitialDir = _T(".\\");
-		hFile.lpstrDefExt = _T("met");
+		InitResources(hWnd);
 		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
@@ -187,10 +186,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_OpenEnhancedFile:
 			hFile.lpstrTitle = _T("Открытие файла");
 			hFile.Flags = OFN_HIDEREADONLY;
-			if (!GetOpenFileName(&hFile)) return 1;
-			///
-			/// Work with fileName
-			///
+			if (!GetOpenFileName(&hFile)) return 1;			
 			if (!(FileLogic::OpenEnhancedFile(&hEnhMetaFile, hFile.lpstrFile)))
 			{
 				MessageBox(hWnd, _T("Ошибка открытия файла"), _T("Error"), MB_OK);
@@ -205,9 +201,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			hFile.lpstrTitle = _T("Сохранение в файл");
 			hFile.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT;
 			if (!GetSaveFileName(&hFile)) return 1;
-			///
-			/// Work with fileName
-			///
 			if (FileLogic::SaveAsEnhancedFile(hWnd, hFile.lpstrFile))
 			{
 				MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
@@ -217,45 +210,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
 			}				
 			break;
+		case IDM_PRINT:
+			CreateDrawObject(3, (HPEN)GetStockObject(BLACK_PEN), (HBRUSH)GetStockObject(HOLLOW_BRUSH));
+			isEndOFDefinitionOfPrintArea = false;			
+			break;
 		case IDM_CHOOSECOLOR:
 			if (ChooseColor(&ccs))
 			{
 				stdColor = ccs.rgbResult;
-				if (hBrush) DeleteObject(hBrush);
-				hBrush = CreateSolidBrush(stdColor);
+				if (currHBrush) DeleteObject(currHBrush);
+				currHBrush = CreateSolidBrush(stdColor);
 				HPEN hPen;
 				if (currHPen) DeleteObject(currHPen);
-				currHPen = CreatePen(PS_SOLID, 5, stdColor);
+				currHPen = CreatePen(PS_SOLID, 1, stdColor);
 				InvalidateRect(hWnd, NULL, TRUE);
 			}
 			break;
 		case IDM_LINE:
-			currentFabric = Factory::GetCurrentFabric(1);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(1, currHPen, currHBrush);
 			break;
 		case IDM_PENCIL:
-			currentFabric = Factory::GetCurrentFabric(2);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(2, currHPen, currHBrush);
 			break;
 		case IDM_RECTANGLE:
-			currentFabric = Factory::GetCurrentFabric(3);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(3, currHPen, currHBrush);
 			break;
 		case IDM_ELLIPSE:
-			currentFabric = Factory::GetCurrentFabric(4);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(4, currHPen, currHBrush);
 			break;
 		case IDM_POLYGONALLINE:
-			currentFabric = Factory::GetCurrentFabric(5);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(5, currHPen, currHBrush);
 			break;
 		case IDM_POLYGON:
-			currentFabric = Factory::GetCurrentFabric(6);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(6, currHPen, currHBrush);
 			break;
 		case IDM_TEXT:
-			currentFabric = Factory::GetCurrentFabric(7);
-			drawingShapes->StartDrawing(currentFabric->Create(currHPen));
+			CreateDrawObject(7, currHPen, currHBrush);
 			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -275,16 +265,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_MOUSEMOVE:
+		prevPoint = point;
 		point.x = LOWORD(lParam);
 		point.y = HIWORD(lParam);	
+		
 		if (!(drawingShapes->isEndDrawing()))
+		{
 			InvalidateRect(hWnd, NULL, TRUE);
+		}
+		else
+		{
+			if (MK_LBUTTON == wParam)
+			{
+				drawingShapes->ChangeCoordinatesOfDrawObjects(point.x - prevPoint.x, point.y - prevPoint.y);
+				InvalidateRect(hWnd, NULL, TRUE);
+			}
+		}
+			
 		break;	
 	case WM_LBUTTONDOWN:		
-		drawingShapes->AddDot(point);			
+		drawingShapes->AddDot(point);	
+		if ((!isEndOFDefinitionOfPrintArea) && (drawingShapes->isEndDrawing()))
+		{
+			isEndOFDefinitionOfPrintArea = true;
+			PrintAsEnhancedFile(hWnd, hFile);
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
 		break;
 	case WM_RBUTTONDOWN:
-		drawingShapes->AddExtraDot();
+		drawingShapes->AddExtraDot();		
+		break;
+	case WM_MOUSEWHEEL:
+		MouseWheel(hWnd, wParam);
 		break;
 	case WM_ERASEBKGND:
 		return 1;
@@ -302,6 +314,62 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}
+
+void InitResources(HWND hWnd)
+{
+	stdColor = RGB(0, 0, 0);
+	InitChooseColorDialogStructure(hWnd);
+	InitOpenFileDialogStructure(hWnd);
+	currHPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	currHBrush = CreateSolidBrush(RGB(0, 0, 0));
+	isEndOFDefinitionOfPrintArea = true;
+	
+
+}
+
+void InitChooseColorDialogStructure(HWND hWnd)
+{
+	ccs.lStructSize = sizeof(CHOOSECOLOR);
+	ccs.hwndOwner = hWnd;
+	ccs.rgbResult = stdColor;
+	ccs.Flags = CC_RGBINIT | CC_FULLOPEN;
+	ccs.lpCustColors = (LPDWORD)acrCustClr;
+}
+
+void InitOpenFileDialogStructure(HWND hWnd)
+{
+	hFile.lStructSize = sizeof(OPENFILENAME);
+	hFile.hwndOwner = hWnd;
+	hFile.hInstance = hInst;
+	hFile.lpstrFilter = _T("MetaFile\0*.met");
+	hFile.lpstrFile = fileName;
+	hFile.nMaxFile = 256;
+	hFile.lpstrInitialDir = _T(".\\");
+	hFile.lpstrDefExt = _T("met");
+}
+
+
+
+void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush)
+{
+	currentFabric = Factory::GetCurrentFabric(index);
+	drawingShapes->StartDrawing(currentFabric->Create(currHPen, hBrush));
+}
+
+void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile)
+{
+	hFile.lpstrTitle = _T("Сохранение в файл");
+	hFile.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT;
+	if (!GetSaveFileName(&hFile)) return;
+	if (FileLogic::PrintAsEnhancedFile(hWnd, hFile.lpstrFile))
+	{
+		MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
+	}
+	else
+	{
+		MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
+	}
 }
 
 // Обработчик сообщений для окна "О программе".
@@ -322,4 +390,22 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+void MouseWheel(HWND hWnd, WPARAM wParam)
+{
+	WORD wParamLowWord = LOWORD(wParam);
+	if ((wParamLowWord == MK_CONTROL) || (wParamLowWord == (MK_CONTROL | MK_SHIFT)))
+	{
+		WORD wheelDestiny = HIWORD(wParam);
+		if (wheelDestiny > 65000)
+		{
+			drawingShapes->Zooming(0.5);			
+		}
+		else
+		{
+			drawingShapes->Zooming(2);
+		}
+		InvalidateRect(hWnd, NULL, true);
+	}
 }

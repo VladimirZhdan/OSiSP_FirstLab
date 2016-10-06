@@ -6,10 +6,10 @@
 
 namespace MiniPaint
 {
-	class Pencil : virtual public DrawObject
+	class Pencil : public DrawObject
 	{
 	public:
-		Pencil(HPEN hPen);
+		Pencil(HPEN hPen, HBRUSH hBrush);
 		virtual void Draw(HDC hdc);
 	};
 }

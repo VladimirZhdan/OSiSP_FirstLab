@@ -3,37 +3,37 @@
 
 
 
-DrawObject* LineCreator::Create(HPEN hPen)
+DrawObject* LineCreator::Create(HPEN hPen, HBRUSH hBrush)
 {	
-	return new MiniPaint::Line(hPen);
+	return new MiniPaint::Line(hPen, hBrush);
 }
 
-DrawObject* PencilCreator::Create(HPEN hPen)
+DrawObject* PencilCreator::Create(HPEN hPen, HBRUSH hBrush)
 {
-	return new MiniPaint::Pencil(hPen);
+	return new MiniPaint::Pencil(hPen, hBrush);
 }
 
-DrawObject* RectangleCreator::Create(HPEN hPen)
+DrawObject* RectangleCreator::Create(HPEN hPen, HBRUSH hBrush)
 {
-	return new MiniPaint::Rectangle(hPen);
+	return new MiniPaint::Rectangle(hPen, hBrush);
 }
 
-DrawObject* EllipseCreator::Create(HPEN hPen)
+DrawObject* EllipseCreator::Create(HPEN hPen, HBRUSH hBrush)
 {
-	return new MiniPaint::Ellipse(hPen);
+	return new MiniPaint::Ellipse(hPen, hBrush);
 }
 
-DrawObject* PolygonalLineCreator::Create(HPEN hPen)
+DrawObject* PolygonalLineCreator::Create(HPEN hPen, HBRUSH hBrush)
 {
-	return new MiniPaint::PolygonalLine(hPen);
+	return new MiniPaint::PolygonalLine(hPen, hBrush);
 }
 
-DrawObject* PolygonCreator::Create(HPEN hPen)
+DrawObject* PolygonCreator::Create(HPEN hPen, HBRUSH hBrush)
 {
-	return new MiniPaint::Polygon(hPen);
+	return new MiniPaint::Polygon(hPen, hBrush);
 }
 
-DrawObject* TextCreator::Create(HPEN hPen)
+DrawObject* TextCreator::Create(HPEN hPen, HBRUSH hBrush)
 {
-	return new MiniPaint::Text(hPen);
+	return new MiniPaint::Text(hPen, hBrush);
 }

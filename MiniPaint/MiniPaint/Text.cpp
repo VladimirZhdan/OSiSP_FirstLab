@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-Text::Text(HPEN hPen) : DrawObject(hPen)
+Text::Text(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
 {
 	countDots = 2;
 }
@@ -27,5 +27,9 @@ void Text::AddInformation(TCHAR inf)
 
 void Text::Draw(HDC hdc)
 {
+	HGDIOBJ prevPen = SelectObject(hdc, hPen);
+	HGDIOBJ prevBrush = SelectObject(hdc, hBrush);
 	TextOut(hdc, dots[0].x, dots[0].y, textValue.data(), textValue.size());
+	SelectObject(hdc, prevPen);
+	SelectObject(hdc, prevBrush);
 }

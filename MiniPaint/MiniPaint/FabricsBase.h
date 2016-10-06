@@ -13,49 +13,49 @@
 class FabricsBase
 {
 public:
-	virtual DrawObject* Create(HPEN hPen) = 0;
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush) = 0;
 };
 
 class LineCreator : public FabricsBase
 {
 public:		
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 class PencilCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 class RectangleCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 class EllipseCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 class PolygonalLineCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 class PolygonCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 class TextCreator : public FabricsBase
 {
 public:
-	virtual DrawObject* Create(HPEN hPen);
+	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
 };
 
 #endif

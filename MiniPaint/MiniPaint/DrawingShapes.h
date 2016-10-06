@@ -11,14 +11,18 @@ public:
 	static DrawingShapes* getInstance();
 	~DrawingShapes();
 	void StartDrawing(DrawObject *shape);
-	void RedrawAllShapes(HDC hdc);
+	void RedrawAllShapes(HDC hdc, RECT *clientRect);
 	void AddDot(POINT point);
 	void Drawing(POINT point);
 	void AddExtraDot();
 	void AddInformation(TCHAR inf);
 	bool isEndDrawing();
 	void setMetaFile(HENHMETAFILE hEnhMetaFile);
-	
+	void DeleteLastShape();
+	RECT* GetRectOfLastObject();
+	void ChangeCoordinatesOfDrawObjects(int deltaX, int deltaY);
+	void Zooming(float zoom);
+		
 private:
 	DrawingShapes();
 	static DrawingShapes* instance;	
@@ -27,6 +31,7 @@ private:
 	DrawObject *currentShape;
 	HWND hWnd;
 	HENHMETAFILE hEnhMetaFile;
+	float zoom;
 
 
 };

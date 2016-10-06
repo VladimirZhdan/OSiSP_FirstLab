@@ -6,10 +6,10 @@
 
 namespace MiniPaint
 {
-	class Ellipse : virtual public DrawObject
+	class Ellipse : public DrawObject
 	{
 	public:
-		Ellipse(HPEN hPen);
+		Ellipse(HPEN hPen, HBRUSH hBrush);
 		virtual void Draw(HDC hdc);
 	};
 
