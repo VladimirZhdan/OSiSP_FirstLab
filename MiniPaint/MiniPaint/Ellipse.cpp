@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-Ellipse::Ellipse(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
+Ellipse::Ellipse(int thickness, COLORREF colorPen, COLORREF colorBrush) : DrawObject(thickness, colorPen, colorBrush)
 {
 	countDots = 2;
 }

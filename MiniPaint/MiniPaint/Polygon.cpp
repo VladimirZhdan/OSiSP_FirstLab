@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-Polygon::Polygon(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
+Polygon::Polygon(int thickness, COLORREF colorPen, COLORREF colorBrush) : DrawObject(thickness, colorPen, colorBrush)
 {
 	countDots = 2;
 

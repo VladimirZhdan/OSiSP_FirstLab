@@ -9,6 +9,8 @@
 #include "FabricsBase.h"
 #include "Factory.h"
 #include "FileLogic.h"
+//file for slider
+#include <CommCtrl.h>
 
 
 
@@ -26,11 +28,12 @@ TCHAR szTitle[MAX_LOADSTRING];					// text of Title
 TCHAR szWindowClass[MAX_LOADSTRING];			// name of main windows class
 DrawingShapes *drawingShapes;
 FabricsBase* currentFabric;
-HPEN currHPen;
-HBRUSH currHBrush;
-//variables for Pan
+//variables for Pen
 POINT prevPoint;
 POINT point;
+int thickness;
+COLORREF colorPen;
+COLORREF colorBrush;
 //variables to work with Pen and Brush
 CHOOSECOLOR ccs;
 COLORREF acrCustClr[16];
@@ -41,12 +44,12 @@ OPENFILENAME hFile;
 HENHMETAFILE hEnhMetaFile;
 bool isEndOFDefinitionOfPrintArea;
 
-
 // methods signatures
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK ChooseThickness(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 // Own methods
 void InitResources(HWND hWnd);
@@ -60,7 +63,7 @@ void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile);
 void ChooseColorHandle(HWND hWnd, CHOOSE_COLOR_MODE mode);
 void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void LButtonDownHandle(HWND hWnd);
-void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush);
+void CreateDrawObject(int index, int thickness, COLORREF colorPen, COLORREF colorBrush);
 void MouseWheel(HWND hWnd, WPARAM wParam);
 void FreeResources();
 
@@ -223,15 +226,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 void InitResources(HWND hWnd)
-{
+{	
 	DrawingShapes::InitInstance(hWnd);
 	drawingShapes = DrawingShapes::getInstance();
 	stdColor = RGB(0, 0, 0);
 	InitChooseColorDialogStructure(hWnd);
 	InitOpenFileDialogStructure(hWnd);
-	currHPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-	currHBrush = CreateSolidBrush(RGB(0, 0, 0));
 	isEndOFDefinitionOfPrintArea = true;	
+	thickness = 1;
+	colorPen = 0;
+	colorBrush = 0;	
 }
 
 void InitChooseColorDialogStructure(HWND hWnd)
@@ -274,28 +278,29 @@ void MenuHandle(HWND hWnd, WORD wmId, WORD wmEvent)
 	case IDM_CHOOSECOLORBRUSH:
 		ChooseColorHandle(hWnd, BRUSH_MODE);
 		break;
-
-
+	case IDM_CHOOSETHICKNESS:
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_CHOOSETHICKNESS), hWnd, ChooseThickness);
+		break;
 	case IDM_LINE:
-		CreateDrawObject(1, currHPen, currHBrush);
+		CreateDrawObject(1, thickness, colorPen, colorBrush);
 		break;
 	case IDM_PENCIL:
-		CreateDrawObject(2, currHPen, currHBrush);
+		CreateDrawObject(2, thickness, colorPen, colorBrush);
 		break;
 	case IDM_RECTANGLE:
-		CreateDrawObject(3, currHPen, currHBrush);
+		CreateDrawObject(3, thickness, colorPen, colorBrush);
 		break;
 	case IDM_ELLIPSE:
-		CreateDrawObject(4, currHPen, currHBrush);
+		CreateDrawObject(4, thickness, colorPen, colorBrush);
 		break;
 	case IDM_POLYGONALLINE:
-		CreateDrawObject(5, currHPen, currHBrush);
+		CreateDrawObject(5, thickness, colorPen, colorBrush);
 		break;
 	case IDM_POLYGON:
-		CreateDrawObject(6, currHPen, currHBrush);
+		CreateDrawObject(6, thickness, colorPen, colorBrush);
 		break;
 	case IDM_TEXT:
-		CreateDrawObject(7, currHPen, currHBrush);
+		CreateDrawObject(7, thickness, colorPen, colorBrush);
 		break;
 	case IDM_ABOUT:
 		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -340,8 +345,8 @@ void SaveFileHandle(HWND hWnd)
 }
 
 void PrintHandle()
-{
-	CreateDrawObject(3, (HPEN)GetStockObject(BLACK_PEN), (HBRUSH)GetStockObject(HOLLOW_BRUSH));
+{		
+	CreateDrawObject(3, 0, 0, 0);
 	isEndOFDefinitionOfPrintArea = false;
 }
 
@@ -349,26 +354,23 @@ void ChooseColorHandle(HWND hWnd, CHOOSE_COLOR_MODE mode)
 {
 	switch (mode)
 	{
-		case PEN_MODE:
-			if (ChooseColor(&ccs))
-			{
-				stdColor = ccs.rgbResult;				
-				if (currHPen) DeleteObject(currHPen);
-				currHPen = CreatePen(PS_SOLID, 1, stdColor);
-				InvalidateRect(hWnd, NULL, TRUE);
-			}
-			break;
-		case BRUSH_MODE:
-			if (ChooseColor(&ccs))
-			{
-				stdColor = ccs.rgbResult;
-				if (currHBrush) DeleteObject(currHBrush);
-				currHBrush = CreateSolidBrush(stdColor);				
-				InvalidateRect(hWnd, NULL, TRUE);
-			}
-			break;
+	case PEN_MODE:
+		if (ChooseColor(&ccs))
+		{
+			colorPen = ccs.rgbResult;				
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+		break;
+	case BRUSH_MODE:
+		if (ChooseColor(&ccs))
+		{
+			colorBrush = ccs.rgbResult;
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+		break;
 	}
 }
+
 
 void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
@@ -383,9 +385,9 @@ void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	else
 	{
 		if (MK_MBUTTON == wParam || ((MK_MBUTTON | MK_SHIFT) == wParam))
-		{
+		{									
 			drawingShapes->ChangeCoordinatesOfDrawObjects(point.x - prevPoint.x, point.y - prevPoint.y);
-			InvalidateRect(hWnd, NULL, TRUE);
+			InvalidateRect(hWnd, NULL, TRUE);		
 		}
 	}
 }
@@ -403,25 +405,31 @@ void LButtonDownHandle(HWND hWnd)
 
 
 
-void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush)
+void CreateDrawObject(int index, int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
 	currentFabric = Factory::GetCurrentFabric(index);
-	drawingShapes->StartDrawing(currentFabric->Create(currHPen, hBrush));
+	drawingShapes->StartDrawing(currentFabric->Create(thickness, colorPen, colorBrush));
 }
 
 void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile)
 {
 	hFile.lpstrTitle = _T("Сохранение в файл");
 	hFile.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT;
-	if (!GetSaveFileName(&hFile)) return;
-	if (FileLogic::PrintAsEnhancedFile(hWnd, hFile.lpstrFile))
-	{
-		MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
+	if (GetSaveFileName(&hFile)) {
+		if (FileLogic::PrintAsEnhancedFile(hWnd, hFile.lpstrFile))
+		{
+			MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
+		}
+		else
+		{
+			MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
+		}
 	}
 	else
 	{
-		MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
+		drawingShapes->DeleteLastShape();
 	}
+	
 }
 
 
@@ -451,8 +459,7 @@ void FreeResources()
 
 // handler for About Dialog
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	static HWND hAboutDC;
+{	
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
@@ -469,3 +476,46 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+
+INT_PTR CALLBACK ChooseThickness(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{		
+	static HWND hTrack;
+	static int trackValue;
+	int wmId, wmEvent;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		trackValue = ::thickness;
+		hTrack = GetDlgItem(hDlg, IDC_SLIDER);
+		SetDlgItemInt(hDlg, IDC_SLIDERVALUE, trackValue, 0);
+		SendMessage(hTrack, TBM_SETRANGEMIN, 0, 1);
+		SendMessage(hTrack, TBM_SETRANGEMAX, 0, 100);
+		SendMessage(hTrack, TBM_SETPOS, TRUE, trackValue);		
+		return (INT_PTR)TRUE;
+	case WM_COMMAND:
+		wmId = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		switch (wmId)
+		{
+		case IDOK:
+			::thickness = trackValue;			
+			EndDialog(hDlg, wmId);
+			return (INT_PTR)TRUE;
+			break;
+		case IDCANCEL:
+			EndDialog(hDlg, wmId);
+			return (INT_PTR)TRUE;
+			break;
+		}
+		return (INT_PTR)TRUE;
+		break;
+	case WM_HSCROLL:
+		trackValue = LOWORD(SendMessage(hTrack, TBM_GETPOS, 0, 0));
+		SetDlgItemInt(hDlg, IDC_SLIDERVALUE, trackValue, 0);
+		InvalidateRect(hDlg, NULL, TRUE);
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+

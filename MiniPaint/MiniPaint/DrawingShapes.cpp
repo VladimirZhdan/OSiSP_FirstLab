@@ -29,6 +29,10 @@ DrawingShapes::~DrawingShapes()
 		delete shapes[i];
 		shapes.pop_back();
 	}
+	if (!endDrawing && (currentShape != NULL))
+	{
+		delete currentShape;
+	}
 }
 
 void DrawingShapes::StartDrawing(DrawObject *shape)
@@ -47,6 +51,8 @@ void DrawingShapes::StartDrawing(DrawObject *shape)
 
 void DrawingShapes::AddDot(POINT point)
 {		
+	point.x /= this->zoom;
+	point.y /= this->zoom;
 	if (currentShape != NULL)
 	{
 		if (endDrawing)
@@ -85,11 +91,11 @@ void DrawingShapes::Drawing(POINT point)
 	PAINTSTRUCT paintStruct;
 	HDC hdc = BeginPaint(hWnd, &paintStruct);
 	HDC bufferHDC = CreateCompatibleDC(hdc);	
-	HBITMAP bitmap = CreateCompatibleBitmap(bufferHDC, windowWidth, windowHeight);
+	HBITMAP bitmap = CreateCompatibleBitmap(hdc, windowWidth, windowHeight);
 	__try
 	{		
 		HGDIOBJ oldBitmap = SelectObject(bufferHDC, bitmap);
-		FillRect(bufferHDC, &clientRect, WHITE_BRUSH);
+		FillRect(bufferHDC, &clientRect, (HBRUSH)WHITE_BRUSH);
 
 		//
 		//draw to buffer
@@ -171,7 +177,7 @@ void DrawingShapes::ChangeCoordinatesOfDrawObjects(int deltaX, int deltaY)
 {
 	for (int i = 0; i < shapes.size(); i++)
 	{
-		shapes[i]->ChangeCoordinates(deltaX, deltaY);
+		shapes[i]->ChangeCoordinates(deltaX / this->zoom, deltaY / this->zoom);
 	}
 }
 

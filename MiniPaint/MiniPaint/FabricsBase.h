@@ -13,49 +13,49 @@
 class FabricsBase
 {
 public:
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush) = 0;
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush) = 0;
 };
 
 class LineCreator : public FabricsBase
 {
 public:		
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 class PencilCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 class RectangleCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 class EllipseCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 class PolygonalLineCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 class PolygonCreator : public FabricsBase
 {
 public:	
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 class TextCreator : public FabricsBase
 {
 public:
-	virtual DrawObject* Create(HPEN hPen, HBRUSH hBrush);
+	virtual DrawObject* Create(int thickness, COLORREF colorPen, COLORREF colorBrush);
 };
 
 #endif

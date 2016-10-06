@@ -9,7 +9,7 @@ namespace MiniPaint
 	class Ellipse : public DrawObject
 	{
 	public:
-		Ellipse(HPEN hPen, HBRUSH hBrush);
+		Ellipse(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 	};
 

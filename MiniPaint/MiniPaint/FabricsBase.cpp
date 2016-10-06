@@ -3,37 +3,37 @@
 
 
 
-DrawObject* LineCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* LineCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {	
-	return new MiniPaint::Line(hPen, hBrush);
+	return new MiniPaint::Line(thickness, colorPen, colorBrush);
 }
 
-DrawObject* PencilCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* PencilCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	return new MiniPaint::Pencil(hPen, hBrush);
+	return new MiniPaint::Pencil(thickness, colorPen, colorBrush);
 }
 
-DrawObject* RectangleCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* RectangleCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	return new MiniPaint::Rectangle(hPen, hBrush);
+	return new MiniPaint::Rectangle(thickness, colorPen, colorBrush);
 }
 
-DrawObject* EllipseCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* EllipseCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	return new MiniPaint::Ellipse(hPen, hBrush);
+	return new MiniPaint::Ellipse(thickness, colorPen, colorBrush);
 }
 
-DrawObject* PolygonalLineCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* PolygonalLineCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	return new MiniPaint::PolygonalLine(hPen, hBrush);
+	return new MiniPaint::PolygonalLine(thickness, colorPen, colorBrush);
 }
 
-DrawObject* PolygonCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* PolygonCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	return new MiniPaint::Polygon(hPen, hBrush);
+	return new MiniPaint::Polygon(thickness, colorPen, colorBrush);
 }
 
-DrawObject* TextCreator::Create(HPEN hPen, HBRUSH hBrush)
+DrawObject* TextCreator::Create(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	return new MiniPaint::Text(hPen, hBrush);
+	return new MiniPaint::Text(thickness, colorPen, colorBrush);
 }

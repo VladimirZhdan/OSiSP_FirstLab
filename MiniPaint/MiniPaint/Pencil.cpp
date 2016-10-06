@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-Pencil::Pencil(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
+Pencil::Pencil(int thickness, COLORREF colorPen, COLORREF colorBrush) : DrawObject(thickness, colorPen, colorBrush)
 {
 	countDots = 2;//more!!!
 }

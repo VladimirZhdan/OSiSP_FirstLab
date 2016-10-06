@@ -9,7 +9,7 @@ namespace MiniPaint
 	class Line : public DrawObject
 	{
 	public:
-		Line(HPEN hPen, HBRUSH hBrush);
+		Line(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 	};
 }

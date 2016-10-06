@@ -12,7 +12,7 @@ namespace MiniPaint
 	class Text : virtual public DrawObject
 	{
 	public:
-		Text(HPEN hPen, HBRUSH hBrush);
+		Text(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 		virtual void AddInformation(TCHAR inf);
 	private:

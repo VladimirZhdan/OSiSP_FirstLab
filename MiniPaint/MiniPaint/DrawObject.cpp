@@ -1,11 +1,31 @@
 #include "stdafx.h"
 #include "DrawObject.h"
 
-DrawObject::DrawObject(HPEN hPen, HBRUSH hBrush)
+DrawObject::DrawObject(int thickness, COLORREF colorPen, COLORREF colorBrush)
 {
-	endDrawing = false;
-	this->hPen = hPen;
-	this->hBrush = hBrush;
+	endDrawing = false;	
+	if (thickness == 0)
+	{
+		this->hPen = CreatePen(PS_SOLID, 1, 0);
+		this->hBrush = (HBRUSH)GetStockObject(HOLLOW_BRUSH);
+	}
+	else
+	{
+		this->hPen = CreatePen(PS_SOLID, thickness, colorPen);
+		this->hBrush = CreateSolidBrush(colorBrush);
+	}
+	
+}
+
+DrawObject::~DrawObject() {
+	if (hPen != NULL)
+	{
+		DeleteObject(hPen);
+	}
+	if (hBrush != NULL)
+	{
+		DeleteObject(hBrush);
+	}	
 }
 
 void DrawObject::AddDot(POINT point)

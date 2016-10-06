@@ -7,7 +7,8 @@
 class DrawObject
 {
 public:	
-	DrawObject(HPEN hPen, HBRUSH hBrush);
+	DrawObject(int thickness, COLORREF colorPen, COLORREF colorBrush);
+	~DrawObject();
 	void AddDot(POINT point);
 	void ChangeIntermediateOrAddNewDot(POINT point);
 	virtual void AddExtraDot();

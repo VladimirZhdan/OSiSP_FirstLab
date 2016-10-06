@@ -9,7 +9,7 @@ namespace MiniPaint
 	class Polygon : public DrawObject
 	{
 	public:
-		Polygon(HPEN hPen, HBRUSH hBrush);
+		Polygon(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 		virtual void AddExtraDot();
 

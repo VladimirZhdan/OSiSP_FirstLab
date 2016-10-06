@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-Text::Text(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
+Text::Text(int thickness, COLORREF colorPen, COLORREF colorBrush) : DrawObject(thickness, colorPen, colorBrush)
 {
 	countDots = 2;
 }

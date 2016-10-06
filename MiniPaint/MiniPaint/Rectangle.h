@@ -9,7 +9,7 @@ namespace MiniPaint
 	class Rectangle : public DrawObject
 	{
 	public:
-		Rectangle(HPEN hPen, HBRUSH hBrush);
+		Rectangle(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 	};
 }

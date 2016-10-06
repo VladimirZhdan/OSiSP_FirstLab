@@ -3,7 +3,7 @@
 
 using namespace MiniPaint;
 
-PolygonalLine::PolygonalLine(HPEN hPen, HBRUSH hBrush) : DrawObject(hPen, hBrush)
+PolygonalLine::PolygonalLine(int thickness, COLORREF colorPen, COLORREF colorBrush) : DrawObject(thickness, colorPen, colorBrush)
 {
 	countDots = 2;
 }

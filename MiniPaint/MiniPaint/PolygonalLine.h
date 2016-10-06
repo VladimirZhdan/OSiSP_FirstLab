@@ -9,7 +9,7 @@ namespace MiniPaint
 	class PolygonalLine : public DrawObject
 	{
 	public:
-		PolygonalLine(HPEN hPen, HBRUSH hBrush);
+		PolygonalLine(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 		virtual void AddExtraDot();
 	};

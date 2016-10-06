@@ -9,7 +9,7 @@ namespace MiniPaint
 	class Pencil : public DrawObject
 	{
 	public:
-		Pencil(HPEN hPen, HBRUSH hBrush);
+		Pencil(int thickness, COLORREF colorPen, COLORREF colorBrush);
 		virtual void Draw(HDC hdc);
 	};
 }
