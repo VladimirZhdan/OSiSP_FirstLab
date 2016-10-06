@@ -119,6 +119,11 @@
     <ResourceCompile Include="MiniPaint.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\Resources\Format BMP.ico" />
+    <Image Include="..\..\..\..\Resources\logo.ico" />
+    <Image Include="..\..\..\..\Resources\logo.png" />
+    <Image Include="..\..\..\..\Resources\logo30x30.ico" />
+    <Image Include="icon1.ico" />
     <Image Include="MiniPaint.ico" />
     <Image Include="small.ico" />
   </ItemGroup>

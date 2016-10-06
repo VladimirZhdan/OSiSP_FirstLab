@@ -14,6 +14,12 @@
 
 #define MAX_LOADSTRING 100
 
+enum CHOOSE_COLOR_MODE
+{
+	PEN_MODE,
+	BRUSH_MODE,
+};
+
 // global variables
 HINSTANCE hInst;								// current hInst
 TCHAR szTitle[MAX_LOADSTRING];					// text of Title
@@ -23,19 +29,17 @@ FabricsBase* currentFabric;
 HPEN currHPen;
 HBRUSH currHBrush;
 //variables for Pan
-static POINT prevPoint;
-static POINT point;
+POINT prevPoint;
+POINT point;
 //variables to work with Pen and Brush
-static CHOOSECOLOR ccs;
-static COLORREF acrCustClr[16];
-static COLORREF stdColor;
+CHOOSECOLOR ccs;
+COLORREF acrCustClr[16];
+COLORREF stdColor;
 //variables to work with Files
-static TCHAR fileName[256] = _T("");
-static OPENFILENAME hFile;
-static HENHMETAFILE hEnhMetaFile;
-static bool isEndOFDefinitionOfPrintArea;
-
-
+TCHAR fileName[256] = _T("");
+OPENFILENAME hFile;
+HENHMETAFILE hEnhMetaFile;
+bool isEndOFDefinitionOfPrintArea;
 
 
 // methods signatures
@@ -53,12 +57,14 @@ void OpenFileHandle(HWND hWnd);
 void SaveFileHandle(HWND hWnd);
 void PrintHandle();
 void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile);
-void ChooseColorHandle(HWND hWnd);
+void ChooseColorHandle(HWND hWnd, CHOOSE_COLOR_MODE mode);
 void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void LButtonDownHandle(HWND hWnd);
 void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush);
 void MouseWheel(HWND hWnd, WPARAM wParam);
 void FreeResources();
+
+
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -170,8 +176,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
 
 	switch (message)
 	{
@@ -198,7 +202,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_RBUTTONDOWN:
 		drawingShapes->AddExtraDot();		
-		break;
+		break;	
 	case WM_MOUSEWHEEL:
 		MouseWheel(hWnd, wParam);
 		break;
@@ -264,9 +268,14 @@ void MenuHandle(HWND hWnd, WORD wmId, WORD wmEvent)
 	case IDM_PRINT:
 		PrintHandle();
 		break;
-	case IDM_CHOOSECOLOR:
-		ChooseColorHandle(hWnd);
+	case IDM_CHOOSECOLORPEN:
+		ChooseColorHandle(hWnd, PEN_MODE);
 		break;
+	case IDM_CHOOSECOLORBRUSH:
+		ChooseColorHandle(hWnd, BRUSH_MODE);
+		break;
+
+
 	case IDM_LINE:
 		CreateDrawObject(1, currHPen, currHBrush);
 		break;
@@ -336,17 +345,28 @@ void PrintHandle()
 	isEndOFDefinitionOfPrintArea = false;
 }
 
-void ChooseColorHandle(HWND hWnd)
+void ChooseColorHandle(HWND hWnd, CHOOSE_COLOR_MODE mode)
 {
-	if (ChooseColor(&ccs))
+	switch (mode)
 	{
-		stdColor = ccs.rgbResult;
-		if (currHBrush) DeleteObject(currHBrush);
-		currHBrush = CreateSolidBrush(stdColor);
-		HPEN hPen;
-		if (currHPen) DeleteObject(currHPen);
-		currHPen = CreatePen(PS_SOLID, 1, stdColor);
-		InvalidateRect(hWnd, NULL, TRUE);
+		case PEN_MODE:
+			if (ChooseColor(&ccs))
+			{
+				stdColor = ccs.rgbResult;				
+				if (currHPen) DeleteObject(currHPen);
+				currHPen = CreatePen(PS_SOLID, 1, stdColor);
+				InvalidateRect(hWnd, NULL, TRUE);
+			}
+			break;
+		case BRUSH_MODE:
+			if (ChooseColor(&ccs))
+			{
+				stdColor = ccs.rgbResult;
+				if (currHBrush) DeleteObject(currHBrush);
+				currHBrush = CreateSolidBrush(stdColor);				
+				InvalidateRect(hWnd, NULL, TRUE);
+			}
+			break;
 	}
 }
 
@@ -362,7 +382,7 @@ void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		if (MK_LBUTTON == wParam)
+		if (MK_MBUTTON == wParam || ((MK_MBUTTON | MK_SHIFT) == wParam))
 		{
 			drawingShapes->ChangeCoordinatesOfDrawObjects(point.x - prevPoint.x, point.y - prevPoint.y);
 			InvalidateRect(hWnd, NULL, TRUE);
@@ -404,25 +424,7 @@ void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile)
 	}
 }
 
-// Обработчик сообщений для окна "О программе".
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
 
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
 
 void MouseWheel(HWND hWnd, WPARAM wParam)
 {
@@ -445,4 +447,25 @@ void MouseWheel(HWND hWnd, WPARAM wParam)
 void FreeResources()
 {
 	delete drawingShapes;
+}
+
+// handler for About Dialog
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static HWND hAboutDC;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:		
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
 }
