@@ -48,10 +48,17 @@ INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 void InitResources(HWND hWnd);
 void InitChooseColorDialogStructure(HWND hWnd);
 void InitOpenFileDialogStructure(HWND hWnd);
-
-void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush);
+void MenuHandle(HWND hWnd, WORD wmId, WORD wmEvent);
+void OpenFileHandle(HWND hWnd);
+void SaveFileHandle(HWND hWnd);
+void PrintHandle();
 void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile);
+void ChooseColorHandle(HWND hWnd);
+void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam);
+void LButtonDownHandle(HWND hWnd);
+void CreateDrawObject(int index, HPEN currHPen, HBRUSH hBrush);
 void MouseWheel(HWND hWnd, WPARAM wParam);
+void FreeResources();
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -138,10 +145,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hWnd = CreateWindow(szWindowClass, szTitle, 
 	   WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
 	   CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, HWND_DESKTOP, NULL, hInstance, NULL);
-   
-
-   DrawingShapes::InitInstance(hWnd);
-   drawingShapes = DrawingShapes::getInstance();
 
    if (!hWnd)
    {
@@ -170,9 +173,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
-
-	
-
 	switch (message)
 	{
 	case WM_CREATE:
@@ -181,81 +181,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);		
-		switch (wmId)
-		{		
-		case IDM_OpenEnhancedFile:
-			hFile.lpstrTitle = _T("Открытие файла");
-			hFile.Flags = OFN_HIDEREADONLY;
-			if (!GetOpenFileName(&hFile)) return 1;			
-			if (!(FileLogic::OpenEnhancedFile(&hEnhMetaFile, hFile.lpstrFile)))
-			{
-				MessageBox(hWnd, _T("Ошибка открытия файла"), _T("Error"), MB_OK);
-			}
-			else
-			{
-				drawingShapes->setMetaFile(hEnhMetaFile);
-			}
-			InvalidateRect(hWnd, NULL, TRUE);
-			break;
-		case IDM_SaveAsEnhancedFile:
-			hFile.lpstrTitle = _T("Сохранение в файл");
-			hFile.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT;
-			if (!GetSaveFileName(&hFile)) return 1;
-			if (FileLogic::SaveAsEnhancedFile(hWnd, hFile.lpstrFile))
-			{
-				MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
-			}				
-			else
-			{
-				MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
-			}				
-			break;
-		case IDM_PRINT:
-			CreateDrawObject(3, (HPEN)GetStockObject(BLACK_PEN), (HBRUSH)GetStockObject(HOLLOW_BRUSH));
-			isEndOFDefinitionOfPrintArea = false;			
-			break;
-		case IDM_CHOOSECOLOR:
-			if (ChooseColor(&ccs))
-			{
-				stdColor = ccs.rgbResult;
-				if (currHBrush) DeleteObject(currHBrush);
-				currHBrush = CreateSolidBrush(stdColor);
-				HPEN hPen;
-				if (currHPen) DeleteObject(currHPen);
-				currHPen = CreatePen(PS_SOLID, 1, stdColor);
-				InvalidateRect(hWnd, NULL, TRUE);
-			}
-			break;
-		case IDM_LINE:
-			CreateDrawObject(1, currHPen, currHBrush);
-			break;
-		case IDM_PENCIL:
-			CreateDrawObject(2, currHPen, currHBrush);
-			break;
-		case IDM_RECTANGLE:
-			CreateDrawObject(3, currHPen, currHBrush);
-			break;
-		case IDM_ELLIPSE:
-			CreateDrawObject(4, currHPen, currHBrush);
-			break;
-		case IDM_POLYGONALLINE:
-			CreateDrawObject(5, currHPen, currHBrush);
-			break;
-		case IDM_POLYGON:
-			CreateDrawObject(6, currHPen, currHBrush);
-			break;
-		case IDM_TEXT:
-			CreateDrawObject(7, currHPen, currHBrush);
-			break;
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
+		MenuHandle(hWnd, wmId, wmEvent);
 		break;
 	case WM_CHAR:
 		if (!(drawingShapes->isEndDrawing()))
@@ -265,32 +191,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_MOUSEMOVE:
-		prevPoint = point;
-		point.x = LOWORD(lParam);
-		point.y = HIWORD(lParam);	
-		
-		if (!(drawingShapes->isEndDrawing()))
-		{
-			InvalidateRect(hWnd, NULL, TRUE);
-		}
-		else
-		{
-			if (MK_LBUTTON == wParam)
-			{
-				drawingShapes->ChangeCoordinatesOfDrawObjects(point.x - prevPoint.x, point.y - prevPoint.y);
-				InvalidateRect(hWnd, NULL, TRUE);
-			}
-		}
-			
+		MouseMoveHandle(hWnd, wParam, lParam);
 		break;	
 	case WM_LBUTTONDOWN:		
-		drawingShapes->AddDot(point);	
-		if ((!isEndOFDefinitionOfPrintArea) && (drawingShapes->isEndDrawing()))
-		{
-			isEndOFDefinitionOfPrintArea = true;
-			PrintAsEnhancedFile(hWnd, hFile);
-			InvalidateRect(hWnd, NULL, TRUE);
-		}
+		LButtonDownHandle(hWnd);
 		break;
 	case WM_RBUTTONDOWN:
 		drawingShapes->AddExtraDot();		
@@ -306,9 +210,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);		
-		//!!!		
-		delete drawingShapes;
-		//!!!		
+		FreeResources();
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -318,14 +220,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void InitResources(HWND hWnd)
 {
+	DrawingShapes::InitInstance(hWnd);
+	drawingShapes = DrawingShapes::getInstance();
 	stdColor = RGB(0, 0, 0);
 	InitChooseColorDialogStructure(hWnd);
 	InitOpenFileDialogStructure(hWnd);
 	currHPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
 	currHBrush = CreateSolidBrush(RGB(0, 0, 0));
-	isEndOFDefinitionOfPrintArea = true;
-	
-
+	isEndOFDefinitionOfPrintArea = true;	
 }
 
 void InitChooseColorDialogStructure(HWND hWnd)
@@ -347,6 +249,136 @@ void InitOpenFileDialogStructure(HWND hWnd)
 	hFile.nMaxFile = 256;
 	hFile.lpstrInitialDir = _T(".\\");
 	hFile.lpstrDefExt = _T("met");
+}
+
+void MenuHandle(HWND hWnd, WORD wmId, WORD wmEvent)
+{
+	switch (wmId)
+	{
+	case IDM_OpenEnhancedFile:
+		OpenFileHandle(hWnd);
+		break;
+	case IDM_SaveAsEnhancedFile:
+		SaveFileHandle(hWnd);
+		break;
+	case IDM_PRINT:
+		PrintHandle();
+		break;
+	case IDM_CHOOSECOLOR:
+		ChooseColorHandle(hWnd);
+		break;
+	case IDM_LINE:
+		CreateDrawObject(1, currHPen, currHBrush);
+		break;
+	case IDM_PENCIL:
+		CreateDrawObject(2, currHPen, currHBrush);
+		break;
+	case IDM_RECTANGLE:
+		CreateDrawObject(3, currHPen, currHBrush);
+		break;
+	case IDM_ELLIPSE:
+		CreateDrawObject(4, currHPen, currHBrush);
+		break;
+	case IDM_POLYGONALLINE:
+		CreateDrawObject(5, currHPen, currHBrush);
+		break;
+	case IDM_POLYGON:
+		CreateDrawObject(6, currHPen, currHBrush);
+		break;
+	case IDM_TEXT:
+		CreateDrawObject(7, currHPen, currHBrush);
+		break;
+	case IDM_ABOUT:
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+		break;
+	case IDM_EXIT:
+		DestroyWindow(hWnd);
+		break;
+	default:
+		break;
+	}
+}
+
+void OpenFileHandle(HWND hWnd)
+{
+	hFile.lpstrTitle = _T("Открытие файла");
+	hFile.Flags = OFN_HIDEREADONLY;
+	if (!GetOpenFileName(&hFile)) return;
+	if (!(FileLogic::OpenEnhancedFile(&hEnhMetaFile, hFile.lpstrFile)))
+	{
+		MessageBox(hWnd, _T("Ошибка открытия файла"), _T("Error"), MB_OK);
+	}
+	else
+	{
+		drawingShapes->setMetaFile(hEnhMetaFile);
+	}
+	InvalidateRect(hWnd, NULL, TRUE);
+}
+
+void SaveFileHandle(HWND hWnd)
+{
+	hFile.lpstrTitle = _T("Сохранение в файл");
+	hFile.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT;
+	if (!GetSaveFileName(&hFile)) return;
+	if (FileLogic::SaveAsEnhancedFile(hWnd, hFile.lpstrFile))
+	{
+		MessageBox(hWnd, _T("Файл успешно сохранен"), _T("Success"), MB_OK);
+	}
+	else
+	{
+		MessageBox(hWnd, _T("Ошибка сохранения файла"), _T("Error"), MB_OK);
+	}
+}
+
+void PrintHandle()
+{
+	CreateDrawObject(3, (HPEN)GetStockObject(BLACK_PEN), (HBRUSH)GetStockObject(HOLLOW_BRUSH));
+	isEndOFDefinitionOfPrintArea = false;
+}
+
+void ChooseColorHandle(HWND hWnd)
+{
+	if (ChooseColor(&ccs))
+	{
+		stdColor = ccs.rgbResult;
+		if (currHBrush) DeleteObject(currHBrush);
+		currHBrush = CreateSolidBrush(stdColor);
+		HPEN hPen;
+		if (currHPen) DeleteObject(currHPen);
+		currHPen = CreatePen(PS_SOLID, 1, stdColor);
+		InvalidateRect(hWnd, NULL, TRUE);
+	}
+}
+
+void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+	prevPoint = point;
+	point.x = LOWORD(lParam);
+	point.y = HIWORD(lParam);
+
+	if (!(drawingShapes->isEndDrawing()))
+	{
+		InvalidateRect(hWnd, NULL, TRUE);
+	}
+	else
+	{
+		if (MK_LBUTTON == wParam)
+		{
+			drawingShapes->ChangeCoordinatesOfDrawObjects(point.x - prevPoint.x, point.y - prevPoint.y);
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+	}
+}
+
+void LButtonDownHandle(HWND hWnd)
+{
+	drawingShapes->AddDot(point);
+	if ((!isEndOFDefinitionOfPrintArea) && (drawingShapes->isEndDrawing()))
+	{
+		isEndOFDefinitionOfPrintArea = true;
+		PrintAsEnhancedFile(hWnd, hFile);
+		InvalidateRect(hWnd, NULL, TRUE);
+	}
 }
 
 
@@ -394,8 +426,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void MouseWheel(HWND hWnd, WPARAM wParam)
 {
-	WORD wParamLowWord = LOWORD(wParam);
-	if ((wParamLowWord == MK_CONTROL) || (wParamLowWord == (MK_CONTROL | MK_SHIFT)))
+	WORD wParamLoWord = LOWORD(wParam);
+	if ((wParamLoWord == MK_CONTROL) || (wParamLoWord == (MK_CONTROL | MK_SHIFT)))
 	{
 		WORD wheelDestiny = HIWORD(wParam);
 		if (wheelDestiny > 65000)
@@ -408,4 +440,9 @@ void MouseWheel(HWND hWnd, WPARAM wParam)
 		}
 		InvalidateRect(hWnd, NULL, true);
 	}
+}
+
+void FreeResources()
+{
+	delete drawingShapes;
 }
