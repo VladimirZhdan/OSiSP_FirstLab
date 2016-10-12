@@ -142,6 +142,7 @@ void DrawingShapes::RedrawAllShapes(HDC hdc, RECT *clientRect)
 		PlayEnhMetaFile(hdc, hEnhMetaFile, clientRect);
 	}
 	// Draw shapes
+
 	for (int i = 0; i < shapes.size(); i++)
 		shapes[i]->Draw(hdc);	
 }

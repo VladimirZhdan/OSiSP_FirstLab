@@ -188,15 +188,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	//variables for drag-drop	
 	HDROP hDropInfo = NULL;
 	UINT buffsize = BUF_SIZE;	
-	TCHAR buf[BUF_SIZE];
-	
-	//char buf[BUF_SIZE];
-
-
-
-
-
-
+	TCHAR bufferForFileName[BUF_SIZE];		
 
 	switch (message)
 	{
@@ -206,19 +198,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_DROPFILES:
 		hDropInfo = (HDROP)wParam;
-		DragQueryFile(hDropInfo, 0, buf, buffsize);
+		DragQueryFile(hDropInfo, 0, bufferForFileName, buffsize);
 		TCHAR *expansion;
-		expansion = _tcsstr(buf, _T(".met"));
+		expansion = _tcsstr(bufferForFileName, _T(".met"));
 		if (expansion != NULL)
 		{
-			OpenFile(hWnd, buf);
+			OpenFile(hWnd, bufferForFileName);
 		}
 		else
 		{
 			MessageBox(hWnd, _T("Несовместимый тип файла."), _T("Error"), MB_OK);
 		}
 		InvalidateRect(hWnd, NULL, TRUE);
-
 		
 		break;
 	case WM_COMMAND:

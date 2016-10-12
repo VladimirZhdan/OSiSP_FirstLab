@@ -53,7 +53,9 @@ bool FileLogic::SaveEnhancedFile(HWND hWnd, TCHAR fileName[], RECT *clientRect){
 			{
 				FillRect(hdcMeta, clientRect, WHITE_BRUSH);
 				DrawingShapes* drawingShapes = DrawingShapes::getInstance();
-				drawingShapes->RedrawAllShapes(hdcMeta, clientRect);																
+				RECT rect;
+				GetClientRect(hWnd, &rect);
+				drawingShapes->RedrawAllShapes(hdcMeta, &rect);																		
 				return true;
 			}
 			else
