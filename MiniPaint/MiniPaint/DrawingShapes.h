@@ -25,6 +25,8 @@ public:
 		
 private:
 	DrawingShapes();
+	void ChangeCoordinatesOfMetaFileRect(int deltaX, int deltaY);
+
 	static DrawingShapes* instance;	
 	std::vector<DrawObject*> shapes;
 	bool endDrawing = true;
@@ -32,6 +34,7 @@ private:
 	HWND hWnd;
 	HENHMETAFILE hEnhMetaFile;
 	float zoom;
+	RECT deltaMetaFileRect;
 
 
 };

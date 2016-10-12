@@ -33,10 +33,10 @@ bool FileLogic::PrintAsEnhancedFile(HWND hWnd, TCHAR fileName[])
 }
 
 bool FileLogic::SaveEnhancedFile(HWND hWnd, TCHAR fileName[], RECT *clientRect){
-	if (clientRect != NULL) {
-		HDC hdcRef = GetDC(hWnd);
+	if (clientRect != NULL) 
+	{
+		HDC hdcRef = GetDC(hWnd);		
 		HDC hdcMeta;
-
 		int iWidthMM, iHeightMM, iWidthPels, iHeightPels;
 		iWidthMM = GetDeviceCaps(hdcRef, HORZSIZE);
 		iHeightMM = GetDeviceCaps(hdcRef, VERTSIZE);
@@ -46,20 +46,26 @@ bool FileLogic::SaveEnhancedFile(HWND hWnd, TCHAR fileName[], RECT *clientRect){
 		clientRect->top = (clientRect->top * iHeightMM * 100) / iHeightPels;
 		clientRect->right = (clientRect->right * iWidthMM * 100) / iWidthPels;
 		clientRect->bottom = (clientRect->bottom * iHeightMM * 100) / iHeightPels;
-
 		hdcMeta = CreateEnhMetaFile(hdcRef, (LPTSTR)fileName, clientRect, NULL);
-		if (hdcMeta)
+		__try
 		{			
-			FillRect(hdcMeta, clientRect, WHITE_BRUSH);
-			DrawingShapes* drawingShapes = DrawingShapes::getInstance();
-			drawingShapes->RedrawAllShapes(hdcMeta, clientRect);
+			if (hdcMeta)
+			{
+				FillRect(hdcMeta, clientRect, WHITE_BRUSH);
+				DrawingShapes* drawingShapes = DrawingShapes::getInstance();
+				drawingShapes->RedrawAllShapes(hdcMeta, clientRect);																
+				return true;
+			}
+			else
+				return false;
+		}
+		__finally
+		{
 			HENHMETAFILE hEmf = CloseEnhMetaFile(hdcMeta);
 			DeleteEnhMetaFile(hEmf);
 			ReleaseDC(hWnd, hdcRef);
-			return true;
 		}
-		else
-			return false;
+		
 	}
 	else
 		return false;

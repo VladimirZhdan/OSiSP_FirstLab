@@ -135,6 +135,10 @@ void DrawingShapes::RedrawAllShapes(HDC hdc, RECT *clientRect)
 	{
 		clientRect->right *= this->zoom;
 		clientRect->bottom *= this->zoom;
+		clientRect->left += this->deltaMetaFileRect.left;
+		clientRect->right += this->deltaMetaFileRect.right;
+		clientRect->top+= this->deltaMetaFileRect.top;
+		clientRect->bottom += this->deltaMetaFileRect.bottom;
 		PlayEnhMetaFile(hdc, hEnhMetaFile, clientRect);
 	}
 	// Draw shapes
@@ -177,8 +181,17 @@ void DrawingShapes::ChangeCoordinatesOfDrawObjects(int deltaX, int deltaY)
 {
 	for (int i = 0; i < shapes.size(); i++)
 	{
-		shapes[i]->ChangeCoordinates(deltaX / this->zoom, deltaY / this->zoom);
+		shapes[i]->ChangeCoordinates(deltaX / this->zoom, deltaY / this->zoom);		
 	}
+	this->ChangeCoordinatesOfMetaFileRect(deltaX / this->zoom, deltaY / this->zoom);
+}
+
+void DrawingShapes::ChangeCoordinatesOfMetaFileRect(int deltaX, int deltaY)
+{
+	this->deltaMetaFileRect.left += deltaX;
+	this->deltaMetaFileRect.right += deltaX;
+	this->deltaMetaFileRect.top += deltaY;
+	this->deltaMetaFileRect.bottom += deltaY;
 }
 
 void DrawingShapes::Zooming(float zoom)

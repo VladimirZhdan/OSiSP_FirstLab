@@ -11,10 +11,16 @@
 #include "FileLogic.h"
 //file for slider
 #include <CommCtrl.h>
-
+//files for drag-drop
+#include <ShellAPI.h>
+#include <string.h>
+#include <stdio.h>
 
 
 #define MAX_LOADSTRING 100
+// for drag-drop
+#define BUF_SIZE 500
+
 
 enum CHOOSE_COLOR_MODE
 {
@@ -57,6 +63,7 @@ void InitChooseColorDialogStructure(HWND hWnd);
 void InitOpenFileDialogStructure(HWND hWnd);
 void MenuHandle(HWND hWnd, WORD wmId, WORD wmEvent);
 void OpenFileHandle(HWND hWnd);
+void OpenFile(HWND hWnd, TCHAR fileName[]);
 void SaveFileHandle(HWND hWnd);
 void PrintHandle();
 void PrintAsEnhancedFile(HWND hWnd, OPENFILENAME hFile);
@@ -77,16 +84,15 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
- 	// TODO: разместите код здесь.
 	MSG msg;
 	HACCEL hAccelTable;
 
-	// Инициализация глобальных строк
+	// Initialization global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_MINIPAINT, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
-	// Выполнить инициализацию приложения:
+	// Initialize application
 	if (!InitInstance (hInstance, nCmdShow))
 	{
 		return FALSE;
@@ -94,7 +100,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MINIPAINT));	
 
-	// Цикл основного сообщения:
+	// cycle of handle messages
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
@@ -179,11 +185,41 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent;
+	//variables for drag-drop	
+	HDROP hDropInfo = NULL;
+	UINT buffsize = BUF_SIZE;	
+	TCHAR buf[BUF_SIZE];
+	
+	//char buf[BUF_SIZE];
+
+
+
+
+
+
 
 	switch (message)
 	{
-	case WM_CREATE:
+	case WM_CREATE:		
+		DragAcceptFiles(hWnd, TRUE);
 		InitResources(hWnd);
+		break;
+	case WM_DROPFILES:
+		hDropInfo = (HDROP)wParam;
+		DragQueryFile(hDropInfo, 0, buf, buffsize);
+		TCHAR *expansion;
+		expansion = _tcsstr(buf, _T(".met"));
+		if (expansion != NULL)
+		{
+			OpenFile(hWnd, buf);
+		}
+		else
+		{
+			MessageBox(hWnd, _T("Несовместимый тип файла."), _T("Error"), MB_OK);
+		}
+		InvalidateRect(hWnd, NULL, TRUE);
+
+		
 		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
@@ -318,7 +354,13 @@ void OpenFileHandle(HWND hWnd)
 	hFile.lpstrTitle = _T("Открытие файла");
 	hFile.Flags = OFN_HIDEREADONLY;
 	if (!GetOpenFileName(&hFile)) return;
-	if (!(FileLogic::OpenEnhancedFile(&hEnhMetaFile, hFile.lpstrFile)))
+	OpenFile(hWnd, hFile.lpstrFile);	
+	InvalidateRect(hWnd, NULL, TRUE);
+}
+
+void OpenFile(HWND hWnd, TCHAR fileName[])
+{
+	if (!(FileLogic::OpenEnhancedFile(&hEnhMetaFile, fileName)))
 	{
 		MessageBox(hWnd, _T("Ошибка открытия файла"), _T("Error"), MB_OK);
 	}
@@ -326,7 +368,6 @@ void OpenFileHandle(HWND hWnd)
 	{
 		drawingShapes->setMetaFile(hEnhMetaFile);
 	}
-	InvalidateRect(hWnd, NULL, TRUE);
 }
 
 void SaveFileHandle(HWND hWnd)
