@@ -34,7 +34,8 @@ TCHAR szTitle[MAX_LOADSTRING];					// text of Title
 TCHAR szWindowClass[MAX_LOADSTRING];			// name of main windows class
 DrawingShapes *drawingShapes;
 FabricsBase* currentFabric;
-//variables for Pen
+//variables for DrawObject
+int currentDrawObjectIndex;
 POINT prevPoint;
 POINT point;
 int thickness;
@@ -260,6 +261,7 @@ void InitResources(HWND hWnd)
 	InitChooseColorDialogStructure(hWnd);
 	InitOpenFileDialogStructure(hWnd);
 	isEndOFDefinitionOfPrintArea = true;	
+	currentDrawObjectIndex = 1;
 	thickness = 1;
 	colorPen = 0;
 	colorBrush = 0;	
@@ -306,28 +308,28 @@ void MenuHandle(HWND hWnd, WORD wmId, WORD wmEvent)
 		ChooseColorHandle(hWnd, BRUSH_MODE);
 		break;
 	case IDM_CHOOSETHICKNESS:
-		DialogBox(hInst, MAKEINTRESOURCE(IDD_CHOOSETHICKNESS), hWnd, ChooseThickness);
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_CHOOSETHICKNESS), hWnd, ChooseThickness);		
 		break;
 	case IDM_LINE:
-		CreateDrawObject(1, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 1;
 		break;
 	case IDM_PENCIL:
-		CreateDrawObject(2, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 2;
 		break;
 	case IDM_RECTANGLE:
-		CreateDrawObject(3, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 3;
 		break;
 	case IDM_ELLIPSE:
-		CreateDrawObject(4, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 4;
 		break;
 	case IDM_POLYGONALLINE:
-		CreateDrawObject(5, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 5;
 		break;
 	case IDM_POLYGON:
-		CreateDrawObject(6, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 6;
 		break;
 	case IDM_TEXT:
-		CreateDrawObject(7, thickness, colorPen, colorBrush);
+		currentDrawObjectIndex = 7;
 		break;
 	case IDM_ABOUT:
 		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -357,6 +359,7 @@ void OpenFile(HWND hWnd, TCHAR fileName[])
 	}
 	else
 	{
+		drawingShapes->ClearShapes();
 		drawingShapes->setMetaFile(hEnhMetaFile);
 	}
 }
@@ -389,7 +392,8 @@ void ChooseColorHandle(HWND hWnd, CHOOSE_COLOR_MODE mode)
 	case PEN_MODE:
 		if (ChooseColor(&ccs))
 		{
-			colorPen = ccs.rgbResult;				
+			colorPen = ccs.rgbResult;	
+			CreateDrawObject(currentDrawObjectIndex, thickness, colorPen, colorBrush);
 			InvalidateRect(hWnd, NULL, TRUE);
 		}
 		break;
@@ -397,6 +401,7 @@ void ChooseColorHandle(HWND hWnd, CHOOSE_COLOR_MODE mode)
 		if (ChooseColor(&ccs))
 		{
 			colorBrush = ccs.rgbResult;
+			CreateDrawObject(currentDrawObjectIndex, thickness, colorPen, colorBrush);
 			InvalidateRect(hWnd, NULL, TRUE);
 		}
 		break;
@@ -426,6 +431,11 @@ void MouseMoveHandle(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 void LButtonDownHandle(HWND hWnd)
 {
+	if (drawingShapes->isEndDrawing())
+	{
+		CreateDrawObject(currentDrawObjectIndex, thickness, colorPen, colorBrush);
+	}
+
 	drawingShapes->AddDot(point);
 	if ((!isEndOFDefinitionOfPrintArea) && (drawingShapes->isEndDrawing()))
 	{
@@ -531,7 +541,8 @@ INT_PTR CALLBACK ChooseThickness(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 		switch (wmId)
 		{
 		case IDOK:
-			::thickness = trackValue;			
+			::thickness = trackValue;
+			CreateDrawObject(currentDrawObjectIndex, thickness, colorPen, colorBrush);
 			EndDialog(hDlg, wmId);
 			return (INT_PTR)TRUE;
 			break;

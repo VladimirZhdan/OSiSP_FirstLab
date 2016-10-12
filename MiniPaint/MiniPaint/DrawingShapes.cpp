@@ -202,4 +202,14 @@ void DrawingShapes::Zooming(float zoom)
 		this->zoom *= zoom;		
 	}
 }
+
+void DrawingShapes::ClearShapes()
+{
+	for (int i = shapes.size() - 1; i >= 0; i--)
+	{
+		delete shapes[i];
+		shapes.pop_back();
+	}
+	shapes.clear();
+}
 		

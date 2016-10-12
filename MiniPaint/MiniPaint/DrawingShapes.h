@@ -22,11 +22,11 @@ public:
 	RECT* GetRectOfLastObject();
 	void ChangeCoordinatesOfDrawObjects(int deltaX, int deltaY);
 	void Zooming(float zoom);
+	void ClearShapes();
 		
 private:
 	DrawingShapes();
 	void ChangeCoordinatesOfMetaFileRect(int deltaX, int deltaY);
-
 	static DrawingShapes* instance;	
 	std::vector<DrawObject*> shapes;
 	bool endDrawing = true;

@@ -20,7 +20,10 @@ bool FileLogic::OpenEnhancedFile(HENHMETAFILE *hEnhMetaFile, TCHAR fileName[])
 		return true;
 	}
 	else
+	{
 		return false;
+	}
+	
 }
 
 bool FileLogic::PrintAsEnhancedFile(HWND hWnd, TCHAR fileName[])
